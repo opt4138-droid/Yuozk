@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>مزرعة البكسل 🌾</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@700;800;900&display=swap');
+:root{
+  --gold:#f2c040;--goldd:#c09010;--dark:#0c0600;--dark2:#180c00;
+  --bord:#7a3800;--green:#38c840;--blue:#3888e0;--red:#e03830;--purp:#b040c8;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--dark);font-family:'Tajawal',sans-serif;}
+body{display:flex;flex-direction:column;}
+canvas{image-rendering:pixelated;image-rendering:crisp-edges;display:block;}
+
+/* ROTATE */
+#rot{display:none;position:fixed;inset:0;background:#060300;z-index:9999;flex-direction:column;align-items:center;justify-content:center;gap:14px;}
+#rot .ic{font-size:52px;animation:rspin 1.8s linear infinite;}
+@keyframes rspin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+#rot p{color:var(--gold);font-size:18px;font-weight:900;text-shadow:2px 2px 0 #6a3800;}
+@media(orientation:portrait){#rot{display:flex;}}
+
+/* HUD */
+#hud{
+  height:42px;flex-shrink:0;
+  background:linear-gradient(180deg,var(--dark2),var(--dark));
+  border-bottom:2px solid var(--bord);
+  display:flex;align-items:center;padding:0 5px;gap:3px;
+  overflow-x:auto;overflow-y:hidden;scrollbar-width:none;
+}
+#hud::-webkit-scrollbar{display:none;}
+.ht{font-size:13px;font-weight:900;color:var(--gold);text-shadow:1px 1px 0 #7a3800;white-space:nowrap;flex-shrink:0;}
+.hs{width:1px;height:22px;background:#7a380038;flex-shrink:0;margin:0 2px;}
+.hc{display:flex;align-items:center;gap:3px;border:1px solid #4a2600;padding:2px 5px;font-size:10px;font-weight:800;color:#f0e8c0;white-space:nowrap;flex-shrink:0;}
+#hszn{padding:2px 6px;border:1px solid;font-size:9px;font-weight:800;white-space:nowrap;flex-shrink:0;}
+.xr{width:40px;height:5px;background:#0c050038;border:1px solid #4a2600;}
+.xf{height:100%;transition:width .3s;}
+.er{width:36px;height:5px;background:#0c050038;border:1px solid #4a2600;}
+.ef{height:100%;transition:width .3s;}
+.hbtn{padding:2px 7px;border:1px solid;font-family:'Tajawal',sans-serif;font-size:9px;font-weight:800;cursor:pointer;background:transparent;white-space:nowrap;flex-shrink:0;transition:filter .1s;}
+.hbtn:active{filter:brightness(1.5);}
+.hbtn.y{border-color:#7a4800;color:var(--gold);}
+.hbtn.g{border-color:#286000;color:#48b828;}
+.hbtn.b{border-color:#00306a;color:#3888e0;}
+.hbtn.p{border-color:#580050;color:#b040c8;}
+
+/* WORLD */
+#world{flex:1;position:relative;overflow:hidden;min-height:0;touch-action:none;}
+#gc,#cc{position:absolute;top:0;left:0;}
+#cc{pointer-events:none;}
+#wxl{position:absolute;inset:0;pointer-events:none;z-index:15;overflow:hidden;}
+.rd{position:absolute;width:2px;background:linear-gradient(180deg,transparent,#88aade68);animation:rf linear infinite;}
+@keyframes rf{from{transform:translateY(-20px)}to{transform:translateY(110vh)}}
+.sf{position:absolute;color:#cce8ff48;animation:sfall linear infinite;}
+@keyframes sfall{from{transform:translateY(-20px)rotate(0)}to{transform:translateY(110vh)rotate(360deg)}}
+
+/* STATUS */
+#stbar{position:absolute;bottom:98px;left:50%;transform:translateX(-50%);pointer-events:none;z-index:30;}
+#stchip{background:#0c050095;border:1px solid #6a3800;padding:2px 10px;font-size:9px;font-weight:800;color:#b08040;white-space:nowrap;}
+
+/* TOOLBAR */
+#tb{height:96px;flex-shrink:0;background:linear-gradient(0deg,var(--dark2),var(--dark));border-top:2px solid var(--bord);display:flex;flex-direction:column;}
+#tr1{display:flex;align-items:center;padding:3px 5px 2px;gap:2px;border-bottom:1px solid #3a1800;flex-shrink:0;overflow-x:auto;scrollbar-width:none;}
+#tr1::-webkit-scrollbar{display:none;}
+#tr2{display:flex;align-items:center;padding:2px 5px 3px;gap:2px;flex:1;overflow-x:auto;scrollbar-width:none;}
+#tr2::-webkit-scrollbar{display:none;}
+.trl{font-size:8px;font-weight:800;color:#6a3800;white-space:nowrap;flex-shrink:0;}
+.tsep{width:1px;height:42px;background:#3a1800;flex-shrink:0;margin:0 2px;}
+
+.tbtn{display:flex;flex-direction:column;align-items:center;gap:1px;background:transparent;border:2px solid #2a1200;padding:2px 3px;cursor:pointer;font-family:'Tajawal',sans-serif;font-size:7px;font-weight:800;color:#906030;min-width:36px;flex-shrink:0;transition:border-color .1s,background .1s;}
+.tbtn:active,.tbtn.sel{border-color:var(--gold);background:#3a2000;color:var(--gold);}
+.sbtn{display:flex;flex-direction:column;align-items:center;gap:1px;background:transparent;border:2px solid #2a1200;padding:2px 2px;cursor:pointer;font-family:'Tajawal',sans-serif;font-size:6px;font-weight:800;color:#906030;min-width:30px;flex-shrink:0;position:relative;transition:border-color .1s;}
+.sbtn:active,.sbtn.sel{border-color:var(--gold);background:#2a1800;color:var(--gold);}
+.sbtn.off{opacity:.32;}
+.scnt{position:absolute;top:0px;right:1px;font-size:7px;color:var(--gold);font-weight:900;}
+.xbtn{display:flex;flex-direction:column;align-items:center;gap:1px;background:transparent;border:1px solid;padding:2px 5px;cursor:pointer;font-family:'Tajawal',sans-serif;font-size:7px;font-weight:800;flex-shrink:0;transition:filter .1s;white-space:nowrap;}
+.xbtn:active{filter:brightness(1.5);}
+.xbtn.g{border-color:#285000;color:#48b028;}
+.xbtn.y{border-color:#5a3800;color:#d09020;}
+.xbtn.r{border-color:#4a1000;color:#c82820;}
+.xbtn.b{border-color:#003870;color:#3888e0;}
+.xbtn.p{border-color:#500050;color:#a830b8;}
+
+/* MODAL */
+.mov{display:none;position:fixed;inset:0;background:#000000a8;z-index:200;align-items:center;justify-content:center;padding:6px;}
+.mov.on{display:flex;}
+.mbox{background:#0e0800;border:2px solid var(--gold);padding:10px;width:100%;max-width:480px;max-height:calc(100vh - 12px);overflow-y:auto;display:flex;flex-direction:column;}
+.mbox::-webkit-scrollbar{width:3px;}.mbox::-webkit-scrollbar-thumb{background:#3a2000;}
+.mbox h2{color:var(--gold);font-size:13px;text-align:center;margin-bottom:7px;text-shadow:1px 1px 0 #7a4000;flex-shrink:0;}
+.mtabs{display:flex;flex-wrap:wrap;border-bottom:1px solid #3a1800;margin-bottom:6px;flex-shrink:0;}
+.mtab{flex:1;min-width:40px;padding:3px 2px;background:transparent;border:none;color:#6a4020;font-family:'Tajawal',sans-serif;font-size:8px;font-weight:800;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;}
+.mtab.sel{color:var(--gold);border-bottom-color:var(--gold);}
+.mpane{display:none;flex:1;overflow-y:auto;}.mpane.on{display:block;}
+.mpane::-webkit-scrollbar{width:3px;}.mpane::-webkit-scrollbar-thumb{background:#3a2000;}
+.mrow{display:flex;align-items:center;justify-content:space-between;padding:4px 2px;border-bottom:1px solid #1c1000;}
+.mrl{display:flex;align-items:center;gap:5px;flex:1;min-width:0;}
+.mi .mn{font-size:10px;font-weight:800;color:#f0e8c0;}
+.mi .ms{font-size:8px;color:#6a4020;}
+.gbtn{background:transparent;border:2px solid var(--gold);color:var(--gold);font-family:'Tajawal',sans-serif;font-size:9px;font-weight:800;padding:2px 7px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+.gbtn:active{background:var(--gold);color:#000;}
+.gbtn:disabled{opacity:.22;cursor:not-allowed;border-color:#3a2000;color:#3a2000;}
+.gbtn.g{border-color:#30b028;color:#30b028;}.gbtn.g:active{background:#30b028;color:#000;}
+.gbtn.r{border-color:#c82820;color:#c82820;}.gbtn.r:active{background:#c82820;color:#fff;}
+.mcard{background:#181000;border:1px solid #3a1800;padding:6px;margin:3px 0;}
+.mcard-h{display:flex;align-items:center;gap:5px;margin-bottom:3px;}
+.mn2{font-size:11px;font-weight:800;color:#f0e8c0;}
+.ms2{font-size:8px;color:#6a4020;}
+.mbar{height:4px;background:#0e0800;border:1px solid #2a1400;margin:2px 0;}
+.mbar-f{height:100%;transition:width .3s;}
+.mtit{font-size:9px;font-weight:800;color:var(--gold);text-align:center;padding:4px 0;border-bottom:1px solid #3a1800;margin:5px 0 3px;}
+.mcl{display:block;width:100%;margin-top:8px;padding:6px;background:#181000;border:1px solid #3a1800;color:#6a4020;font-family:'Tajawal',sans-serif;font-size:11px;cursor:pointer;flex-shrink:0;}
+.mcl:active{border-color:var(--gold);color:var(--gold);}
+
+/* NOTIFS */
+#nfs{position:fixed;top:48px;left:50%;transform:translateX(-50%);z-index:600;display:flex;flex-direction:column;gap:2px;align-items:center;pointer-events:none;}
+.np{background:#0e0800ee;border:2px solid var(--gold);padding:3px 10px;font-size:10px;font-weight:800;color:var(--gold);animation:nI .18s,nO .25s 2s forwards;}
+@keyframes nI{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+@keyframes nO{from{opacity:1}to{opacity:0}}
+
+/* LEVELUP */
+#lvlmod .lbig{font-size:52px;font-weight:900;color:var(--gold);text-align:center;text-shadow:3px 3px 0 #7a4000;animation:pop .38s;}
+@keyframes pop{0%{transform:scale(.15)}60%{transform:scale(1.18)}100%{transform:scale(1)}}
+</style>
+</head>
+<body>
+
+<!-- ROTATE NOTICE -->
+<div id="rot">
+  <div class="ic">📱</div>
+  <p>أدر جهازك أفقياً للعب!</p>
+  <p style="font-size:13px;color:#6a4020;font-weight:700;">Rotate to landscape</p>
+</div>
+
+<!-- HUD -->
+<div id="hud">
+  <span class="ht">⚔ مزرعة البكسل</span>
+  <div class="hs"></div>
+  <div class="hc"><canvas id="hcoin" width="12" height="12"></canvas><b id="hm">500</b>ذ</div>
+  <div class="hc">📅<b id="hday">1</b></div>
+  <div id="hszn">🌸 ربيع</div>
+  <div class="hc">⭐<b id="hlv">1</b><div class="xr"><div class="xf" id="xpb" style="width:0%;background:#f2c040;"></div></div></div>
+  <div class="hc">⚡<b id="hen">100</b><div class="er"><div class="ef" id="enb" style="width:100%;background:#38c840;"></div></div></div>
+  <div class="hs"></div>
+  <button class="hbtn y" onclick="openM('shop','seeds')">🌱 بذور</button>
+  <button class="hbtn y" onclick="openM('shop','inv')">🧺 مخزون</button>
+  <button class="hbtn p" onclick="openM('shop','craft')">🏭 تصنيع</button>
+  <button class="hbtn b" onclick="openM('farm','animals')">🐄 حيوانات</button>
+  <button class="hbtn b" onclick="openM('farm','build')">🏗 مبانٍ</button>
+  <button class="hbtn b" onclick="openM('farm','skills')">⭐ مهارات</button>
+  <button class="hbtn b" onclick="openM('farm','wx')">🌤 طقس</button>
+  <button class="hbtn b" onclick="openM('farm','stats')">📊 إحصائيات</button>
+  <button class="hbtn b" onclick="openM('shop','expand')">🌍 توسعة</button>
+  <div class="hs"></div>
+  <button class="hbtn g" onclick="nextDay()">⏭ التالي</button>
+  <button class="hbtn b" onclick="saveGame(true)" title="حفظ اللعبة">💾</button>
+</div>
+
+<!-- WORLD -->
+<div id="world">
+  <canvas id="gc"></canvas>
+  <canvas id="cc"></canvas>
+  <div id="wxl"></div>
+</div>
+<div id="stbar"><div id="stchip">🌾 احرث ← ازرع ← اسقِ ← احصد</div></div>
+
+<!-- TOOLBAR -->
+<div id="tb">
+  <div id="tr1">
+    <span class="trl">أداة:</span>
+    <button class="tbtn sel" id="tb-hoe"      onclick="selT('hoe')">      <canvas id="ti-hoe"  width="20" height="20"></canvas>حرث</button>
+    <button class="tbtn"     id="tb-seed"      onclick="selT('seed')">     <canvas id="ti-seed" width="20" height="20"></canvas>زرع</button>
+    <button class="tbtn"     id="tb-water"     onclick="selT('water')">    <canvas id="ti-wat"  width="20" height="20"></canvas>ري</button>
+    <button class="tbtn"     id="tb-harvest"   onclick="selT('harvest')">  <canvas id="ti-har"  width="20" height="20"></canvas>حصاد</button>
+    <button class="tbtn"     id="tb-fertilize" onclick="selT('fertilize')"><canvas id="ti-fer"  width="20" height="20"></canvas>سماد</button>
+    <button class="tbtn"     id="tb-plow"      onclick="selT('plow')">     <canvas id="ti-plo"  width="20" height="20"></canvas>إزالة</button>
+    <div class="tsep"></div>
+    <button class="xbtn g" onclick="waterAll()">  <canvas id="ai-wa" width="14" height="14"></canvas>ري الكل</button>
+    <button class="xbtn y" onclick="harvestAll()"><canvas id="ai-ha" width="14" height="14"></canvas>حصاد الكل</button>
+    <button class="xbtn r" onclick="sellAll()">   <canvas id="ai-sa" width="14" height="14"></canvas>بيع الكل</button>
+    <div class="tsep"></div>
+    <button class="xbtn b" onclick="openM('shop','craft')">🏭 تصنيع</button>
+    <button class="xbtn b" onclick="openM('farm','build')">🏗 مبانٍ</button>
+    <button class="xbtn b" onclick="openM('farm','skills')">⭐ مهارات</button>
+    <button class="xbtn b" onclick="openM('farm','wx')">🌤 طقس</button>
+    <button class="xbtn b" onclick="openM('shop','expand')">🌍 توسعة</button>
+  </div>
+  <div id="tr2">
+    <span class="trl">بذور:</span>
+    <div id="sbtns" style="display:flex;gap:2px;"></div>
+  </div>
+</div>
+
+<!-- SHOP MODAL -->
+<div class="mov" id="shopmod">
+  <div class="mbox">
+    <h2>🏪 السوق</h2>
+    <div class="mtabs">
+      <button class="mtab sel" onclick="mTab('shop','seeds')">🌱 بذور</button>
+      <button class="mtab"     onclick="mTab('shop','inv')">🧺 مخزون</button>
+      <button class="mtab"     onclick="mTab('shop','craft')">🏭 تصنيع</button>
+      <button class="mtab"     onclick="mTab('shop','expand')">🌍 توسعة</button>
+      <button class="mtab"     onclick="mTab('shop','extras')">🧪 مستلزمات</button>
+    </div>
+    <div class="mpane on" id="sp-seeds"></div>
+    <div class="mpane"    id="sp-inv"></div>
+    <div class="mpane"    id="sp-craft"></div>
+    <div class="mpane"    id="sp-expand"></div>
+    <div class="mpane"    id="sp-extras"></div>
+    <button class="mcl" onclick="closeM('shopmod')">✕ إغلاق</button>
+  </div>
+</div>
+
+<!-- FARM MODAL -->
+<div class="mov" id="farmmod">
+  <div class="mbox">
+    <h2>🐄 المزرعة</h2>
+    <div class="mtabs">
+      <button class="mtab sel" onclick="mTab('farm','animals')">🐄 حيوانات</button>
+      <button class="mtab"     onclick="mTab('farm','build')">🏗 مبانٍ</button>
+      <button class="mtab"     onclick="mTab('farm','skills')">⭐ مهارات</button>
+      <button class="mtab"     onclick="mTab('farm','wx')">🌤 طقس</button>
+      <button class="mtab"     onclick="mTab('farm','stats')">📊 إحصائيات</button>
+    </div>
+    <div class="mpane on" id="fp-animals"></div>
+    <div class="mpane"    id="fp-build"></div>
+    <div class="mpane"    id="fp-skills"></div>
+    <div class="mpane"    id="fp-wx"></div>
+    <div class="mpane"    id="fp-stats"></div>
+    <button class="mcl" onclick="closeM('farmmod')">✕ إغلاق</button>
+  </div>
+</div>
+
+<!-- LEVELUP -->
+<div class="mov" id="lvlmod">
+  <div class="mbox" style="max-width:260px;text-align:center;">
+    <div style="font-size:26px">🎉</div>
+    <div style="font-size:14px;font-weight:900;color:var(--gold);">ارتقيت مستوى!</div>
+    <div class="lbig" id="lvlnum">2</div>
+    <div id="lvlbns" style="font-size:10px;color:#6a4020;margin:4px 0;"></div>
+    <div style="font-size:9px;color:#404040;">+1 نقطة مهارة أضيفت</div>
+    <button class="mcl" onclick="closeM('lvlmod')">رائع! تابع</button>
+  </div>
+</div>
+
+<div id="nfs"></div>
+
+<script>
+'use strict';
+// ════════════════════════════════════════════════
+//  PIXEL ART ENGINE
+// ════════════════════════════════════════════════
+const _=null;
+const [G,g,D,d,W,w,Y,y,R,r,O,o,B,b,P,p,GR,gr,BN,bn,K,k,T,t,N,LT,lt,Gd,gd]=
+['#338a22','#4aaa30','#5a3010','#7a4828','#88bbee','#bbddff','#f2c040','#c09010',
+ '#e04040','#b02020','#e07020','#b04010','#4080e0','#2060b0','#c060d0','#9030b0',
+ '#90c030','#608020','#c8a878','#a07848','#f0f0f0','#d0d0d0','#50d870','#30b050',
+ '#181818','#d0b888','#a08858','#228b22','#145010'];
+
+const SP={
+  hoe:[_,_,_,_,_,_,LT,lt,_,_,_,_,_,LT,lt,_,_,_,_,_,LT,lt,_,_,_,_,_,LT,D,d,_,_,_,_,LT,d,D,_,_,_,_,LT,D,d,_,_,_,_,D,d,D,_,_,_,_,_,d,D,_,_,_,_,_,_],
+  watercan:[_,_,B,B,B,_,_,_,_,B,b,b,B,B,_,_,B,b,W,W,b,b,B,_,B,b,W,W,W,b,B,_,_,B,b,b,b,B,_,W,_,_,B,B,B,_,W,w,_,_,_,_,_,W,w,_,_,_,_,_,W,w,_,_],
+  seedbag:[_,_,GR,GR,GR,_,_,_,_,GR,gr,gr,GR,_,_,_,GR,gr,G,G,gr,GR,_,_,GR,gr,G,Y,gr,GR,_,_,GR,gr,G,G,gr,GR,_,_,_,GR,gr,gr,GR,_,_,_,_,_,GR,GR,_,_,_,_,_,_,_,_,_,_,_],
+  basket:[_,Y,Y,Y,Y,Y,Y,_,Y,y,y,y,y,y,y,Y,Y,y,Y,y,Y,y,Y,Y,Y,y,y,y,y,y,y,Y,_,Y,y,y,y,y,Y,_,_,_,Y,y,y,Y,_,_,_,_,_,Y,Y,_,_,_,_,_,_,_,_,_,_,_],
+  fertilize:[_,_,T,T,T,_,_,_,_,T,t,t,T,_,_,_,T,t,G,G,t,T,_,_,T,t,G,g,t,T,_,_,T,t,G,G,t,T,_,_,_,T,t,t,T,_,_,_,_,_,T,T,_,_,_,_,_,_,_,_,_,_,_,_],
+  remove:[R,_,_,_,_,_,_,R,_,r,_,_,_,_,r,_,_,_,R,_,_,R,_,_,_,_,_,r,r,_,_,_,_,_,_,r,r,_,_,_,_,_,R,_,_,R,_,_,_,r,_,_,_,_,r,_,R,_,_,_,_,_,_,R],
+  coin:[_,Y,Y,Y,Y,Y,_,_,Y,y,Y,Y,Y,y,Y,_,Y,y,Y,y,Y,y,Y,_,Y,y,Y,Y,Y,y,Y,_,_,Y,Y,Y,Y,Y,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+  turnip:[_,_,T,T,T,_,_,_,_,T,t,t,T,_,_,_,_,P,p,P,p,P,_,_,P,p,P,P,p,P,p,_,P,p,P,P,p,P,p,_,_,P,p,p,P,P,_,_,_,_,P,P,P,_,_,_,_,_,_,P,_,_,_,_],
+  carrot:[_,_,T,T,T,_,_,_,_,T,t,t,T,T,_,_,_,_,O,O,O,_,_,_,_,O,o,O,o,O,_,_,_,O,o,O,o,O,_,_,_,_,O,o,O,_,_,_,_,_,_,O,_,_,_,_,_,_,_,o,_,_,_,_],
+  potato:[_,_,_,_,_,_,_,_,_,_,BN,BN,BN,_,_,_,_,BN,bn,LT,bn,BN,_,_,BN,bn,LT,BN,LT,bn,BN,_,BN,bn,LT,BN,LT,bn,BN,_,_,BN,bn,LT,bn,BN,_,_,_,_,BN,BN,BN,_,_,_,_,_,_,_,_,_,_,_],
+  tomato:[_,T,t,T,t,T,_,_,_,_,T,T,T,_,_,_,_,R,R,R,R,R,_,_,R,r,R,R,R,r,R,_,R,r,R,R,R,r,R,_,R,r,R,R,R,r,R,_,_,R,r,r,r,R,_,_,_,_,R,R,R,_,_,_],
+  corn:[_,T,t,T,_,_,_,_,_,T,t,T,_,_,_,_,_,_,Y,Y,Y,_,_,_,_,Y,y,Y,y,Y,_,_,_,Y,y,Y,y,Y,_,_,_,Y,y,Y,y,Y,_,_,_,Y,y,Y,y,Y,_,_,_,_,Y,Y,Y,_,_,_],
+  melon:[_,_,T,t,_,_,_,_,_,_,_,T,T,_,_,_,_,GR,GR,GR,GR,GR,_,_,GR,gr,GR,gr,GR,gr,GR,_,GR,gr,R,R,gr,GR,gr,_,GR,gr,R,R,gr,GR,gr,_,_,GR,gr,gr,GR,gr,_,_,_,_,GR,GR,GR,_,_],
+  pumpkin:[_,T,_,T,T,_,T,_,_,T,_,T,T,_,T,_,_,O,O,O,O,O,_,_,O,o,O,Y,O,o,O,_,O,o,O,O,O,o,O,_,O,o,O,O,O,o,O,_,_,O,o,o,o,O,_,_,_,_,O,O,O,_,_,_],
+  strawberry:[_,T,t,T,t,T,_,_,_,_,T,T,T,_,_,_,_,R,R,R,R,R,_,_,R,r,K,R,K,r,R,_,R,r,R,R,R,r,R,_,_,R,r,R,r,R,_,_,_,_,R,r,R,_,_,_,_,_,_,R,_,_,_,_],
+  blueberry:[_,T,t,T,_,_,_,_,_,_,T,T,T,_,_,_,_,B,B,B,B,_,_,_,B,b,B,K,b,B,_,_,B,b,B,B,b,B,_,_,_,B,b,b,B,_,_,_,_,_,B,B,_,_,_,_,_,_,_,_,_,_,_,_],
+  grape:[_,T,t,T,t,_,_,_,_,T,t,T,t,T,_,_,_,P,P,p,_,_,_,_,_,P,p,P,P,_,_,_,P,p,P,p,P,p,_,_,_,P,p,P,p,_,_,_,_,_,P,p,_,_,_,_,_,_,_,P,_,_,_,_],
+  wheat:[_,_,_,Y,_,_,_,_,_,_,Y,y,Y,_,_,_,_,Y,y,Y,y,Y,_,_,_,Y,y,Y,y,Y,_,_,_,_,BN,BN,_,_,_,_,_,_,BN,BN,_,_,_,_,_,_,BN,BN,_,_,_,_,_,_,BN,BN,_,_,_,_],
+  sunflower:[_,Y,_,Y,_,Y,_,_,Y,y,Y,y,Y,y,_,_,_,Y,y,Y,y,Y,_,_,_,_,Y,D,Y,_,_,_,_,_,_,GR,_,_,_,_,_,_,_,GR,_,_,_,_,_,_,GR,gr,GR,_,_,_,_,_,_,GR,_,_,_,_],
+  chicken:[_,_,R,_,_,_,_,_,_,R,r,R,_,_,_,_,_,K,K,K,K,_,_,_,K,k,K,k,K,k,_,_,K,k,K,K,K,k,_,_,_,K,k,k,k,K,_,_,_,_,Y,_,Y,_,_,_,_,_,_,_,_,_,_,_],
+  cow:[_,_,K,K,K,K,_,_,K,K,k,D,k,D,K,_,K,k,K,K,K,K,k,K,_,K,k,K,K,k,K,_,_,K,K,K,K,K,_,_,_,K,_,K,K,_,K,_,_,K,_,_,_,_,K,_,_,_,_,_,_,_,_,_],
+  sheep:[_,K,K,K,K,K,_,_,K,k,K,K,K,k,K,_,K,k,K,k,K,k,K,_,K,k,K,N,K,k,K,_,_,K,K,K,K,K,_,_,_,_,K,_,K,_,_,_,_,_,K,_,K,_,_,_,_,_,_,_,_,_,_,_],
+  egg:[_,_,K,K,K,_,_,_,_,K,k,k,K,K,_,_,K,k,K,k,K,K,_,_,K,k,k,k,K,K,_,_,_,K,K,K,K,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+  milk:[_,_,B,B,B,B,_,_,_,B,W,W,B,B,_,_,B,W,w,W,B,B,_,_,B,W,w,W,B,B,_,_,B,W,W,W,B,B,_,_,_,B,B,B,B,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+  wool:[_,K,K,K,K,K,K,_,K,k,K,k,K,k,K,_,K,k,K,k,K,k,K,_,K,k,K,k,K,k,K,_,_,K,K,K,K,K,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+  flour:[_,BN,BN,BN,BN,BN,_,_,BN,bn,bn,bn,bn,bn,BN,_,BN,bn,K,K,K,bn,BN,_,BN,bn,K,Y,K,bn,BN,_,BN,bn,K,K,K,bn,BN,_,_,BN,bn,bn,bn,BN,_,_,_,_,BN,BN,BN,_,_,_,_,_,_,_,_,_,_,_],
+  jam:[_,R,R,R,R,R,_,_,R,r,R,R,R,r,R,_,R,r,Y,Y,r,R,_,_,R,r,Y,K,Y,r,R,_,R,r,Y,Y,r,R,_,_,_,R,r,r,r,R,_,_,_,_,R,R,R,_,_,_,_,_,_,_,_,_,_,_],
+  butter:[_,Y,Y,Y,Y,Y,_,_,Y,y,y,y,y,y,Y,_,Y,y,K,K,y,Y,_,_,Y,y,K,K,K,y,Y,_,Y,y,K,K,y,Y,_,_,_,Y,y,y,y,Y,_,_,_,_,Y,Y,Y,_,_,_,_,_,_,_,_,_,_,_],
+  pie:[_,BN,BN,BN,BN,BN,_,_,BN,R,R,R,R,R,BN,_,BN,R,K,R,K,R,BN,_,BN,R,R,R,R,R,BN,_,_,BN,bn,bn,bn,BN,_,_,_,_,BN,BN,BN,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_,_],
+  // buildings
+  barn:[_,_,_,R,r,R,_,_,_,_,R,r,R,r,R,_,_,R,r,R,r,R,r,R,R,LT,lt,LT,lt,LT,lt,R,R,lt,LT,lt,LT,lt,LT,R,R,LT,lt,D,d,lt,LT,R,R,lt,LT,D,d,LT,lt,R,R,R,R,R,R,R,R,R],
+  well:[_,_,BN,_,_,BN,_,_,_,_,BN,_,Y,BN,_,_,_,_,BN,BN,BN,BN,_,_,_,BN,b,W,w,b,BN,_,BN,bn,W,w,W,w,bn,BN,BN,bn,W,w,W,w,bn,BN,_,BN,BN,BN,BN,BN,BN,_,_,_,_,_,_,_,_,_],
+  mill:[_,_,_,BN,BN,_,_,_,_,Y,_,BN,bn,_,Y,_,Y,_,Y,BN,bn,Y,_,Y,_,Y,_,BN,bn,_,Y,_,_,_,BN,BN,BN,BN,_,_,_,BN,bn,BN,bn,BN,bn,_,BN,bn,BN,Y,Y,BN,bn,BN,_,_,_,_,_,_,_,_],
+  greenhouse:[_,_,B,B,B,B,_,_,_,B,b,W,w,b,B,_,B,b,W,w,W,w,b,B,B,b,W,w,W,w,b,B,B,b,GR,GR,GR,b,B,B,B,b,GR,gr,GR,b,B,_,_,B,B,B,B,B,_,_,_,_,_,_,_,_,_,_],
+  silo:[_,_,BN,BN,BN,_,_,_,_,BN,Y,Y,Y,BN,_,_,BN,Y,y,Y,y,Y,BN,_,BN,Y,y,Y,y,Y,BN,_,BN,Y,y,Y,y,Y,BN,_,BN,Y,y,Y,y,Y,BN,_,_,BN,Y,Y,Y,BN,_,_,_,_,BN,BN,BN,_,_,_],
+  market:[R,r,R,r,R,r,R,r,R,LT,LT,LT,LT,LT,LT,R,_,LT,lt,LT,lt,LT,lt,_,_,LT,Y,LT,Y,LT,Y,_,_,LT,lt,LT,lt,LT,lt,_,_,LT,D,LT,D,LT,D,_,_,LT,d,D,d,D,d,_,_,_,_,_,_,_,_,_],
+  // terrain
+  grass:[G,G,g,G,G,G,G,G,G,G,G,G,g,G,G,G,G,G,G,G,G,G,G,G,g,G,G,G,G,G,g,G,G,G,G,G,G,G,G,G,G,G,g,G,G,G,G,G,G,G,G,G,G,G,g,G,G,G,G,G,G,G,G,G],
+  soil:[d,D,d,D,d,D,d,D,D,d,D,d,D,d,D,d,d,D,d,D,d,D,d,D,D,d,D,d,D,d,D,d,d,D,d,D,d,D,d,D,D,d,D,d,D,d,D,d,d,D,d,D,d,D,d,D,D,d,D,d,D,d,D,d],
+  tree:[Gd,Gd,gd,Gd,Gd,Gd,Gd,_,Gd,gd,Gd,gd,Gd,gd,Gd,_,gd,Gd,Gd,Gd,gd,Gd,Gd,_,Gd,gd,Gd,Gd,Gd,gd,Gd,_,_,Gd,gd,Gd,gd,Gd,_,_,_,_,_,BN,_,_,_,_,_,_,_,BN,_,_,_,_,_,_,_,BN,_,_,_,_],
+  house:[_,_,_,R,R,R,_,_,_,_,R,r,R,r,R,_,_,R,r,R,r,R,r,R,LT,lt,LT,lt,LT,lt,LT,LT,LT,lt,B,B,LT,lt,LT,LT,LT,lt,B,B,LT,lt,LT,LT,LT,lt,D,D,D,lt,LT,LT,_,_,_,_,_,_,_,_],
+};
+
+const SC={};
+function gS(n){if(SC[n])return SC[n];const da=SP[n];if(!da)return null;const cv=document.createElement('canvas');cv.width=8;cv.height=8;const cx=cv.getContext('2d');for(let i=0;i<da.length;i++){let c=da[i];if(!c)continue;if(c==='1')c='#2e1a0a';if(c==='2')c='#1e1006';cx.fillStyle=c;cx.fillRect(i%8,Math.floor(i/8),1,1);}return SC[n]=cv;}
+function dS(ctx,n,x,y,s){const sp=gS(n);if(!sp)return;ctx.imageSmoothingEnabled=false;ctx.drawImage(sp,x,y,8*s,8*s);}
+function fillC(id,n,s){const el=document.getElementById(id);if(!el)return;const sp=gS(n);if(!sp)return;el.width=8*s;el.height=8*s;el.style.width=(8*s)+'px';el.style.height=(8*s)+'px';const cx=el.getContext('2d');cx.imageSmoothingEnabled=false;cx.drawImage(sp,0,0,8*s,8*s);}
+function mkSp(n,s=2){const cv=document.createElement('canvas');cv.width=8*s;cv.height=8*s;cv.style.cssText=`image-rendering:pixelated;flex-shrink:0;`;const sp=gS(n);if(sp){const cx=cv.getContext('2d');cx.imageSmoothingEnabled=false;cx.drawImage(sp,0,0,8*s,8*s);}return cv;}
+
+// ════════════════════════════════════════════════
+//  GAME DATA
+// ════════════════════════════════════════════════
+const SEASONS=[
+  {id:'spring',n:'الربيع',ic:'🌸',s1:'#4aaa48',s2:'#2d7028',gm:1,   wx:{rain:.4,sunny:.5,windy:.1}},
+  {id:'summer',n:'الصيف', ic:'☀️',s1:'#58a8c8',s2:'#2870a0',gm:1.2, wx:{sunny:.6,hot:.3,windy:.1}},
+  {id:'autumn',n:'الخريف',ic:'🍂',s1:'#a87028',s2:'#684010',gm:.8,  wx:{rain:.5,windy:.3,sunny:.2}},
+  {id:'winter',n:'الشتاء',ic:'❄️',s1:'#607098',s2:'#384070',gm:.4,  wx:{snow:.5,cloudy:.4,sunny:.1}},
+];
+const WX={
+  sunny:{n:'مشمس',ic:'☀️',b:0,  aw:false,col:'#e0a020'},
+  rain: {n:'ممطر',ic:'🌧️',b:.5, aw:true, col:'#4080c0'},
+  hot:  {n:'حار', ic:'🌡️',b:-.3,aw:false,col:'#e05020'},
+  windy:{n:'عاصف',ic:'💨',b:0,  aw:false,col:'#80a0a0'},
+  snow: {n:'ثلجي',ic:'❄️',b:-1, aw:false,col:'#8090c0'},
+  cloudy:{n:'غائم',ic:'☁️',b:-.2,aw:false,col:'#707070'},
+};
+const CROPS={
+  turnip:    {n:'فجل',     sp:'turnip',    sc:20, sv:60,  gd:3,sz:['spring','autumn'],xp:5},
+  carrot:    {n:'جزر',     sp:'carrot',    sc:25, sv:75,  gd:3,sz:['spring','autumn'],xp:6},
+  potato:    {n:'بطاطس',   sp:'potato',    sc:30, sv:90,  gd:4,sz:['spring','autumn'],xp:7},
+  tomato:    {n:'طماطم',   sp:'tomato',    sc:40, sv:130, gd:5,sz:['summer'],xp:10},
+  corn:      {n:'ذرة',     sp:'corn',      sc:50, sv:160, gd:6,sz:['summer'],xp:12},
+  melon:     {n:'بطيخ',    sp:'melon',     sc:80, sv:260, gd:8,sz:['summer'],xp:18},
+  pumpkin:   {n:'قرع',     sp:'pumpkin',   sc:60, sv:210, gd:7,sz:['autumn'],xp:15},
+  strawberry:{n:'فراولة',  sp:'strawberry',sc:100,sv:320, gd:4,sz:['spring'],xp:22},
+  blueberry: {n:'توت',     sp:'blueberry', sc:120,sv:370, gd:5,sz:['summer','spring'],xp:25},
+  grape:     {n:'عنب',     sp:'grape',     sc:150,sv:470, gd:9,sz:['autumn'],xp:30,ul:5},
+  wheat:     {n:'قمح',     sp:'wheat',     sc:15, sv:45,  gd:4,sz:['spring','summer'],xp:4},
+  sunflower: {n:'عباد شمس',sp:'sunflower', sc:35, sv:100, gd:5,sz:['summer'],xp:9,ul:3},
+};
+const ANIMALS={
+  chicken:{n:'دجاجة',sp:'chicken',cost:200,feed:'wheat',fa:1,prod:'egg', ps:'egg', pn:'بيض', pv:30,pd:1,xpd:3},
+  cow:    {n:'بقرة', sp:'cow',    cost:600,feed:'corn', fa:2,prod:'milk',ps:'milk',pn:'حليب',pv:80,pd:2,xpd:8,ul:4},
+  sheep:  {n:'خروف', sp:'sheep',  cost:400,feed:'wheat',fa:2,prod:'wool',ps:'wool',pn:'صوف', pv:60,pd:3,xpd:5,ul:3},
+};
+const BUILDINGS={
+  barn:      {n:'حظيرة',    sp:'barn',      cost:800, desc:'تُمكّن اقتناء الحيوانات',wx:-.18,wy:.08},
+  well:      {n:'بئر',      sp:'well',      cost:500, desc:'3 ريّات مجانية/يوم',     wx:-.10,wy:.50},
+  mill:      {n:'مطحنة',    sp:'mill',      cost:1200,desc:'تصنيع منتجات معالجة',    wx:-.28,wy:.42},
+  greenhouse:{n:'بيت زجاجي',sp:'greenhouse',cost:2000,desc:'زرع أي فصل',             wx:.08, wy:.08},
+  silo:      {n:'صومعة',    sp:'silo',      cost:600, desc:'تخزين محسّن',             wx:.22, wy:.38},
+  market:    {n:'محل بيع',  sp:'market',    cost:1500,desc:'+30% سعر البيع',          wx:.18, wy:.08},
+};
+const SKDEF=[
+  {id:'farming', n:'الزراعة',  col:'#40c040',max:5,desc:'+1 حصاد/مستوى'},
+  {id:'watering',n:'الري',     col:'#4080e0',max:5,desc:'طاقة ري أقل'},
+  {id:'trading', n:'التجارة',  col:'#f2c040',max:5,desc:'+10% سعر/مستوى'},
+  {id:'tending', n:'رعاية',    col:'#c08030',max:5,desc:'+إنتاج حيوانات'},
+  {id:'crafting',n:'التصنيع',  col:'#9030b0',max:3,desc:'يفتح وصفات أفضل'},
+];
+const CRAFTS=[
+  {id:'flour', n:'طحين',  sp:'flour',  needs:{wheat:3},      val:90, bld:'mill', desc:'3 قمح → طحين'},
+  {id:'jam',   n:'مربى',  sp:'jam',    needs:{strawberry:2}, val:250,sk:{crafting:1},desc:'2 فراولة → مربى'},
+  {id:'butter',n:'زبدة',  sp:'butter', needs:{milk:3},       val:300,bld:'mill', desc:'3 حليب → زبدة'},
+  {id:'pie',   n:'فطيرة', sp:'pie',    needs:{flour:1,egg:2},val:500,bld:'mill',sk:{crafting:2},desc:'طحين+بيضتان'},
+];
+
+// ════════════════════════════════════════════════
+//  STATE
+// ════════════════════════════════════════════════
+const S={
+  money:500,day:1,si:0,dis:1,dps:7,
+  wx:'sunny',energy:100,maxE:100,freeW:0,
+  lv:1,xp:0,xpN:100,skPts:0,
+  skills:{farming:0,watering:0,trading:0,tending:0,crafting:0},
+  seeds:{turnip:5,wheat:3},
+  inv:{},animals:[],built:{},
+  tool:'hoe',seed:'turnip',
+  COLS:12,ROWS:5,
+  stats:{days:0,harvested:0,earned:0,crafted:0},
+};
+let grid=[],CS=0,OX=0,OY=0,parts=[],mx=0,my=0;
+let aMod=null,aST='seeds',aFT='animals';
+
+// ════════════════════════════════════════════════
+//  GRID
+// ════════════════════════════════════════════════
+function initGrid(keep=false){
+  const old=keep?JSON.parse(JSON.stringify(grid)):null;
+  grid=[];
+  for(let r=0;r<S.ROWS;r++){
+    grid[r]=[];
+    for(let c=0;c<S.COLS;c++)
+      grid[r][c]=old&&old[r]&&old[r][c]?old[r][c]:{t:'grass',wet:false,crop:null,days:0,fert:false};
+  }
+}
+
+// ════════════════════════════════════════════════
+//  CANVAS
+// ════════════════════════════════════════════════
+const gc=document.getElementById('gc'),gx=gc.getContext('2d');
+const cc=document.getElementById('cc'),cx2=cc.getContext('2d');
+
+function resize(){
+  const wr=document.getElementById('world');
+  const W=wr.clientWidth,H=wr.clientHeight;
+  gc.width=cc.width=W; gc.height=cc.height=H;
+  CS=Math.min(
+    Math.floor((W-56)/(S.COLS+2.5)),
+    Math.floor((H-14)/(S.ROWS+1.5)),
+    96
+  );
+  CS=Math.max(CS,32);
+  OX=Math.floor((W-S.COLS*CS)/2);
+  OY=Math.floor((H-S.ROWS*CS)/2);
+}
+
+// ════════════════════════════════════════════════
+//  RENDER LOOP
+// ════════════════════════════════════════════════
+function loop(){
+  const W=gc.width,H=gc.height;
+  gx.clearRect(0,0,W,H);
+  const szn=SEASONS[S.si];
+  // sky gradient
+  const grd=gx.createLinearGradient(0,0,0,H);
+  grd.addColorStop(0,szn.s1);grd.addColorStop(1,szn.s2);
+  gx.fillStyle=grd;gx.fillRect(0,0,W,H);
+  const Sp=Math.max(1,Math.round(CS/8));
+  const lx=OX, rx=OX+S.COLS*CS;
+  // ground
+  gx.fillStyle='#1a6010';gx.fillRect(0,OY+S.ROWS*CS,W,H);
+  // trees & house
+  dS(gx,'tree',lx-CS-2,OY+S.ROWS*CS-CS,Sp);
+  dS(gx,'tree',lx-Math.round(CS*.5),OY+S.ROWS*CS-Math.round(CS*.72),Math.round(Sp*.8));
+  dS(gx,'house',rx+6,OY+2,Sp);
+  // buildings appear on world
+  Object.entries(BUILDINGS).forEach(([id,bd])=>{
+    if(!S.built[id])return;
+    const bx=bd.wx<0 ? lx+Math.round(bd.wx*lx*2) : rx+Math.round(bd.wx*(W-rx));
+    const by=OY+Math.round(bd.wy*H);
+    gx.fillStyle='#00000025';gx.fillRect(bx+2,by+8*Sp+2,8*Sp,3);
+    dS(gx,bd.sp,bx,by,Sp);
+    gx.fillStyle='#f2c040bb';gx.font=`bold ${Math.max(6,Math.round(Sp*1.9))}px Tajawal`;
+    gx.textAlign='center';gx.fillText(bd.n,bx+4*Sp,by+8*Sp+10);gx.textAlign='left';
+  });
+  // animals near barn
+  if(S.built.barn&&S.animals.length){
+    const bd=BUILDINGS.barn;
+    const bx=lx+Math.round(bd.wx*lx*2);
+    const by=OY+Math.round(bd.wy*H);
+    S.animals.forEach((a,i)=>{
+      const tt=Date.now()/900+i*2.2;
+      dS(gx,ANIMALS[a.type].sp,
+        bx+8*Sp+3+Math.round(Math.sin(tt)*13)+i*10,
+        by+8*Sp-3+Math.round(Math.cos(tt*.62)*7),
+        Math.max(1,Math.round(Sp*.84)));
+    });
+  }
+  // grid
+  for(let r=0;r<S.ROWS;r++)for(let c=0;c<S.COLS;c++)drawCell(OX+c*CS,OY+r*CS,grid[r][c],Sp);
+  // particles
+  for(let i=parts.length-1;i>=0;i--){
+    const p=parts[i];gx.globalAlpha=p.life/p.maxLife;
+    dS(gx,p.sp,Math.round(p.x),Math.round(p.y),Math.max(1,Math.round(CS/10)));
+    p.x+=p.vx;p.y+=p.vy;p.life--;if(p.life<=0)parts.splice(i,1);
+  }
+  gx.globalAlpha=1;
+  // cursor
+  cx2.clearRect(0,0,W,H);
+  const hc=Math.floor((mx-OX)/CS),hr=Math.floor((my-OY)/CS);
+  if(hc>=0&&hc<S.COLS&&hr>=0&&hr<S.ROWS){
+    cx2.strokeStyle='#f2c040';cx2.lineWidth=2;cx2.strokeRect(OX+hc*CS+1,OY+hr*CS+1,CS-2,CS-2);
+    const ts=toolSp();
+    if(ts){cx2.globalAlpha=.5;dS(cx2,ts,OX+hc*CS+CS-Math.round(CS*.35),OY+hr*CS+CS-Math.round(CS*.35),Math.max(1,Math.round(CS/10)));cx2.globalAlpha=1;}
+  }
+  requestAnimationFrame(loop);
+}
+function toolSp(){return{hoe:'hoe',water:'watercan',seed:S.seed,harvest:'basket',fertilize:'fertilize',plow:'remove'}[S.tool]||null;}
+
+function drawCell(x,y,cell,Sp){
+  gx.imageSmoothingEnabled=false;
+  if(cell.t==='grass'){
+    dS(gx,'grass',x,y,Sp);
+    gx.strokeStyle='#18500820';gx.lineWidth=1;gx.strokeRect(x,y,CS,CS);
+    return;
+  }
+  if(cell.wet){
+    for(let i=0;i<64;i++){gx.fillStyle=i%2===0?'#2e1a0a':'#1e1006';gx.fillRect(x+(i%8)*Sp,y+Math.floor(i/8)*Sp,Sp,Sp);}
+    gx.fillStyle='#4488cc0e';gx.fillRect(x,y,CS,CS);
+  }else dS(gx,'soil',x,y,Sp);
+  if(cell.fert){gx.fillStyle='#40c0400e';gx.fillRect(x,y,CS,CS);}
+  gx.strokeStyle='#2a140040';gx.lineWidth=1;gx.strokeRect(x,y,CS,CS);
+  if(cell.crop){
+    const cd=CROPS[cell.crop],prog=Math.min(cell.days/Math.max(1,cd.gd),1),rdy=prog>=1;
+    const sc2=Math.max(1,Math.round(rdy?Sp:(Sp*.18+Sp*.82*prog)));
+    dS(gx,cd.sp,x+Math.round((CS-8*sc2)/2),y+Math.round((CS-8*sc2)/2),sc2);
+    const bx=x+3,by=y+CS-6,bw=CS-6,bh=3;
+    gx.fillStyle='#00000058';gx.fillRect(bx,by,bw,bh);
+    gx.fillStyle=rdy?'#40ff40':(cell.fert?'#40e060':'#f2c040');gx.fillRect(bx,by,bw*prog,bh);
+    if(rdy){gx.strokeStyle='#80ff8060';gx.lineWidth=2;gx.strokeRect(x+1,y+1,CS-2,CS-2);}
+  }
+}
+
+// ════════════════════════════════════════════════
+//  INPUT
+// ════════════════════════════════════════════════
+function setupInput(){
+  [gc,cc].forEach(el=>{
+    el.addEventListener('mousemove',e=>{const r=el.getBoundingClientRect();mx=e.clientX-r.left;my=e.clientY-r.top;});
+    el.addEventListener('click',e=>{const r=el.getBoundingClientRect();hit(Math.floor((e.clientY-r.top-OY)/CS),Math.floor((e.clientX-r.left-OX)/CS));});
+    el.addEventListener('touchstart',e=>{const r=el.getBoundingClientRect();const t=e.touches[0];mx=t.clientX-r.left;my=t.clientY-r.top;},{passive:true});
+    el.addEventListener('touchend',e=>{e.preventDefault();const r=el.getBoundingClientRect();const t=e.changedTouches[0];hit(Math.floor((t.clientY-r.top-OY)/CS),Math.floor((t.clientX-r.left-OX)/CS));},{passive:false});
+  });
+}
+
+function hit(row,col){
+  if(col<0||col>=S.COLS||row<0||row>=S.ROWS)return;
+  const cell=grid[row][col];
+  const px=OX+col*CS+CS/2,py=OY+row*CS+CS/2;
+  switch(S.tool){
+    case'hoe':
+      if(cell.t!=='grass'){setSt('مُحرَثة بالفعل');return;}
+      if(!useE(5))return;
+      cell.t='soil';spawnP(px,py,'soil',3);addXP(2);setSt('✅ تم الحرث');break;
+    case'seed':{
+      if(cell.t!=='soil'){setSt('احرث أولاً!');return;}
+      if(cell.crop){setSt('مزروعة بالفعل!');return;}
+      const sid=S.seed;
+      if(!(S.seeds[sid]>0)){setSt('لا بذور! اشترِ من السوق');return;}
+      const cd=CROPS[sid];
+      if(!S.built.greenhouse&&!cd.sz.includes(SEASONS[S.si].id)){setSt(`⚠️ ${cd.n} لا تنمو الآن`);return;}
+      if(!useE(Math.max(1,3-Math.floor(S.skills.watering/2))))return;
+      cell.crop=sid;cell.days=0;cell.fert=false;S.seeds[sid]--;
+      spawnP(px,py,cd.sp,3);addXP(cd.xp/2);setSt(`🌱 زُرع ${cd.n}`);break;}
+    case'water':
+      if(cell.t!=='soil'){setSt('لا تحتاج ري');return;}
+      if(cell.wet){setSt('مرويّة بالفعل');return;}
+      {let ec=Math.max(1,2-Math.floor(S.skills.watering/2));
+      if(S.freeW>0){ec=0;S.freeW--;notify('🪣 ري مجاني!');}
+      if(ec>0&&!useE(ec))return;
+      cell.wet=true;spawnP(px,py,'watercan',3);addXP(1);setSt('💧 تم الري');break;}
+    case'harvest':
+      if(!cell.crop){setSt('لا محصول هنا');return;}
+      {const cd=CROPS[cell.crop];
+      if(cell.days<cd.gd){setSt(`⏳ ${cd.gd-Math.floor(cell.days)} أيام متبقية`);return;}
+      if(!useE(4))return;
+      const cnt=1+S.skills.farming+(Math.random()<.3?1:0);
+      addInv(cell.crop,cnt);spawnP(px,py,cd.sp,6);addXP(cd.xp);S.stats.harvested+=cnt;
+      setSt(`🧺 ${cnt}×${cd.n}!`);cell.crop=null;cell.days=0;cell.wet=false;cell.fert=false;break;}
+    case'fertilize':
+      if(cell.t!=='soil'||!cell.crop){setSt('يحتاج نبتة مزروعة');return;}
+      if(cell.fert){setSt('مُسمَّدة بالفعل');return;}
+      if(!(S.inv.fertilizer>0)){setSt('لا سماد! اشترِ من المستلزمات');return;}
+      if(!useE(4))return;
+      cell.fert=true;S.inv.fertilizer--;cell.days=Math.min(cell.days+2,CROPS[cell.crop].gd);
+      spawnP(px,py,'fertilize',4);setSt('💚 تسميد!');break;
+    case'plow':
+      if(cell.t==='grass'){setSt('لا شيء لإزالته');return;}
+      if(!useE(2))return;
+      if(cell.crop){cell.crop=null;cell.days=0;setSt('🔄 أُزيلت النبتة');}
+      else{cell.t='grass';cell.wet=false;setSt('🔄 أُزيلت التربة');}break;
+  }
+  updSeedBar();
+}
+
+// ════════════════════════════════════════════════
+//  ENERGY / XP / DAY
+// ════════════════════════════════════════════════
+function useE(a){if(S.energy<a){notify('⚡ طاقة غير كافية!');return false;}S.energy-=a;updHUD();return true;}
+function addXP(v){
+  S.xp+=v;
+  while(S.xp>=S.xpN){S.xp-=S.xpN;S.lv++;S.skPts++;S.maxE=100+S.lv*5;S.xpN=Math.floor(100*Math.pow(1.35,S.lv-1));
+    document.getElementById('lvlnum').textContent=S.lv;document.getElementById('lvlbns').textContent=`الطاقة: ${S.maxE}`;
+    document.getElementById('lvlmod').classList.add('on');}
+  updHUD();
+}
+
+function nextDay(){
+  S.day++;S.dis++;S.stats.days++;
+  if(S.dis>S.dps){S.dis=1;S.si=(S.si+1)%4;notify(`${SEASONS[S.si].ic} ${SEASONS[S.si].n}!`);}
+  let cum=0;const roll=Math.random();
+  for(const[wid,wc]of Object.entries(SEASONS[S.si].wx)){cum+=wc;if(roll<=cum){S.wx=wid;break;}}
+  const wxd=WX[S.wx];
+  if(wxd.aw){for(let r=0;r<S.ROWS;r++)for(let c=0;c<S.COLS;c++)if(grid[r][c].t==='soil')grid[r][c].wet=true;notify('🌧️ المطر روى الكل!');}
+  let grew=0;const szn=SEASONS[S.si];
+  for(let r=0;r<S.ROWS;r++){for(let c=0;c<S.COLS;c++){const cell=grid[r][c];if(cell.crop&&cell.wet){const mod=szn.gm+wxd.b+(cell.fert?.3:0);if(mod>0){cell.days+=Math.max(.2,mod);grew++;}}if(S.wx!=='rain')cell.wet=false;}}
+  S.freeW=S.built.well?3:0;
+  S.animals.forEach(a=>{
+    const ad=ANIMALS[a.type];
+    if(a.fed){a.dsp=(a.dsp||0)+1;a.happy=Math.min(100,a.happy+10);
+      if(a.dsp>=ad.pd){const q=1+S.skills.tending;addInv(ad.prod,q);a.dsp=0;addXP(ad.xpd);notify(`${ad.pn}×${q} من ${a.n}!`);}}
+    else a.happy=Math.max(0,a.happy-20);
+    a.fed=false;
+  });
+  S.energy=S.maxE;
+  updateWxFX();
+  setSt(`📅 يوم ${S.day} — ${wxd.ic} ${wxd.n} — ${grew} نبتة نمت`);
+  notify(`📅 يوم ${S.day} | ${SEASONS[S.si].ic} ${SEASONS[S.si].n}`);
+  updHUD();updSeedBar();
+  if(aMod==='farm')buildFT(aFT);
+  if(aMod==='shop')buildST(aST);
+}
+
+// ════════════════════════════════════════════════
+//  ACTIONS
+// ════════════════════════════════════════════════
+function addInv(id,n){S.inv[id]=(S.inv[id]||0)+n;}
+function iVal(id){if(CROPS[id])return CROPS[id].sv;for(const a of Object.values(ANIMALS))if(a.prod===id)return a.pv;const c=CRAFTS.find(x=>x.id===id);if(c)return c.val;return 50;}
+function iName(id){if(CROPS[id])return CROPS[id].n;for(const a of Object.values(ANIMALS))if(a.prod===id)return a.pn;const c=CRAFTS.find(x=>x.id===id);if(c)return c.n;return id;}
+function iSp(id){if(CROPS[id])return CROPS[id].sp;for(const[,a]of Object.entries(ANIMALS))if(a.prod===id)return a.ps;const c=CRAFTS.find(x=>x.id===id);if(c)return c.sp;return 'coin';}
+function sellMult(){return(S.built.market?1.3:1)*(1+S.skills.trading*.1);}
+function sellItem(id){const cnt=S.inv[id];if(!cnt)return;const e=Math.floor(iVal(id)*cnt*sellMult());S.money+=e;delete S.inv[id];addXP(cnt*2);S.stats.earned+=e;notify(`💰 ${cnt}×${iName(id)} = ${e}ذ`);updHUD();buildST('inv');}
+function sellAll(){let t=0;for(const[id]of Object.entries(S.inv)){t+=Math.floor(iVal(id)*S.inv[id]*sellMult());}if(!t){notify('المخزون فارغ');return;}S.stats.earned+=t;S.money+=t;S.inv={};notify(`💰 ${t}ذ بعت الكل!`);updHUD();}
+function doCraft(id){const c=CRAFTS.find(x=>x.id===id);if(!c)return;if(c.bld&&!S.built[c.bld]){notify(`تحتاج ${BUILDINGS[c.bld].n}!`);return;}if(c.sk)for(const[sk,lv]of Object.entries(c.sk)){if((S.skills[sk]||0)<lv){notify(`مهارة ${SKDEF.find(s=>s.id===sk)?.n} مست ${lv}`);return;}}for(const[ing,amt]of Object.entries(c.needs)){if((S.inv[ing]||0)<amt){notify(`لا يكفي ${iName(ing)}`);return;}}for(const[ing,amt]of Object.entries(c.needs)){S.inv[ing]-=amt;if(!S.inv[ing])delete S.inv[ing];}addInv(c.id,1);notify(`✅ ${c.n}!`);addXP(20);S.stats.crafted++;updHUD();buildST('craft');}
+function buildStr(id){const bd=BUILDINGS[id];if(S.built[id]){notify('مبني بالفعل!');return;}if(S.money<bd.cost){notify('💸 لا يكفي!');return;}S.money-=bd.cost;S.built[id]=true;if(id==='well')S.freeW=3;notify(`✅ ${bd.n} يظهر في العالم!`);addXP(40);updHUD();buildFT('build');}
+function addAnimal(type){const ad=ANIMALS[type];if(!S.built.barn){notify('ابنِ الحظيرة أولاً!');return;}if(S.money<ad.cost){notify('💸 لا يكفي!');return;}S.money-=ad.cost;S.animals.push({type,n:ad.n+(S.animals.filter(a=>a.type===type).length+1),happy:80,fed:false,dsp:0});notify(`${ad.n} مرحباً!`);addXP(15);updHUD();buildFT('animals');}
+function feedAnimal(i){const a=S.animals[i],ad=ANIMALS[a.type];if((S.inv[ad.feed]||0)<ad.fa){notify(`لا يكفي ${iName(ad.feed)}`);return;}S.inv[ad.feed]-=ad.fa;if(!S.inv[ad.feed])delete S.inv[ad.feed];a.fed=true;a.happy=Math.min(100,a.happy+15);notify(`${a.n} مُغذَّى!`);buildFT('animals');}
+function upgSk(id){const sk=SKDEF.find(s=>s.id===id);if(!sk)return;if(S.skPts<=0){notify('لا نقاط مهارة!');return;}if(S.skills[id]>=sk.max){notify('الحد الأقصى');return;}S.skills[id]++;S.skPts--;notify(`⭐ ${sk.n} مستوى ${S.skills[id]}`);updHUD();buildFT('skills');}
+function waterAll(){if(!useE(20))return;let n=0;for(let r=0;r<S.ROWS;r++)for(let c=0;c<S.COLS;c++)if(grid[r][c].t==='soil'&&!grid[r][c].wet){grid[r][c].wet=true;n++;}notify(`💧 روَّيت ${n} قطعة!`);}
+function harvestAll(){if(!useE(20))return;let n=0;for(let r=0;r<S.ROWS;r++){for(let c=0;c<S.COLS;c++){const cell=grid[r][c];if(cell.crop&&cell.days>=CROPS[cell.crop].gd){const cnt=1+S.skills.farming;addInv(cell.crop,cnt);addXP(CROPS[cell.crop].xp);S.stats.harvested+=cnt;cell.crop=null;cell.days=0;cell.wet=false;cell.fert=false;n++;}}}notify(n?`🧺 ${n} محصول!`:'لا ناضج بعد');updHUD();}
+function buySeed(id,q){const cd=CROPS[id],cost=cd.sc*q;if(S.money<cost){notify('💸 لا يكفي!');return;}S.money-=cost;S.seeds[id]=(S.seeds[id]||0)+q;notify(`🌱 ${q}×${cd.n}`);updHUD();updSeedBar();buildST('seeds');}
+function buyItem(id,q,price){if(S.money<price){notify('💸 لا يكفي!');return;}S.money-=price;addInv(id,q);notify(`✅ ${q}×${iName(id)}`);updHUD();}
+function expandFarm(n,cost,isRow=false){if(S.money<cost){notify('💸 لا يكفي!');return;}S.money-=cost;if(isRow){if(S.ROWS>=8){notify('الحد الأقصى 8 صفوف');return;}S.ROWS++;}else{S.COLS=Math.min(S.COLS+n,22);}initGrid(true);resize();notify('🌍 المزرعة اتسعت!');updHUD();}
+
+// ════════════════════════════════════════════════
+//  WEATHER FX
+// ════════════════════════════════════════════════
+function updateWxFX(){
+  const wl=document.getElementById('wxl');wl.innerHTML='';
+  if(S.wx==='rain')for(let i=0;i<38;i++){const el=document.createElement('div');el.className='rd';el.style.cssText=`left:${Math.random()*100}%;height:${9+Math.random()*14}px;animation-duration:${.38+Math.random()*.28}s;animation-delay:${Math.random()*.6}s;`;wl.appendChild(el);}
+  else if(S.wx==='snow')for(let i=0;i<16;i++){const el=document.createElement('div');el.className='sf';el.textContent='*';el.style.cssText=`left:${Math.random()*100}%;font-size:${5+Math.random()*7}px;animation-duration:${1.8+Math.random()*2.5}s;animation-delay:${Math.random()*1.8}s;`;wl.appendChild(el);}
+}
+
+// ════════════════════════════════════════════════
+//  PARTICLES
+// ════════════════════════════════════════════════
+function spawnP(x,y,sp,n=4){for(let i=0;i<n;i++)parts.push({x,y,vx:(Math.random()-.5)*2.4,vy:-2.1-Math.random()*1.8,sp,life:30,maxLife:30});}
+
+// ════════════════════════════════════════════════
+//  UI UPDATES
+// ════════════════════════════════════════════════
+function selT(t){
+  S.tool=t;
+  document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('sel'));
+  const el=document.getElementById('tb-'+t);if(el)el.classList.add('sel');
+  if(t==='seed')fillC('ti-seed',S.seed,2);
+  const hints={hoe:'⛏ انقر على العشب',seed:`🌱 زرع ${CROPS[S.seed]?.n}`,water:'💧 ري التربة',harvest:'🧺 حصاد الناضج',fertilize:'💚 تسميد النبتة',plow:'🔄 إزالة'};
+  setSt(hints[t]||'');
+}
+function setSt(m){document.getElementById('stchip').textContent=m;}
+function notify(m){const n=document.createElement('div');n.className='np';n.textContent=m;document.getElementById('nfs').appendChild(n);setTimeout(()=>n.remove(),2350);}
+function spawnP2(x,y,sp,n){spawnP(x,y,sp,n);}
+
+function updHUD(){
+  document.getElementById('hm').textContent=S.money;
+  document.getElementById('hday').textContent=S.day;
+  document.getElementById('hlv').textContent=S.lv;
+  document.getElementById('hen').textContent=S.energy;
+  document.getElementById('enb').style.width=(S.energy/S.maxE*100)+'%';
+  document.getElementById('xpb').style.width=(S.xp/S.xpN*100)+'%';
+  const szn=SEASONS[S.si],sb=document.getElementById('hszn');
+  sb.textContent=`${szn.ic} ${szn.n}`;
+  const c={spring:'#40a830',summer:'#3080c0',autumn:'#c07020',winter:'#6080a0'}[szn.id];
+  sb.style.color=c;sb.style.borderColor=c;sb.style.background=c+'16';
+}
+
+function updSeedBar(){
+  const sb=document.getElementById('sbtns');sb.innerHTML='';
+  const szn=SEASONS[S.si];
+  Object.entries(CROPS).filter(([,cd])=>!cd.ul||S.lv>=cd.ul).forEach(([id,cd])=>{
+    const ok=S.built.greenhouse||cd.sz.includes(szn.id);
+    const btn=document.createElement('button');
+    btn.className='sbtn'+(S.seed===id?' sel':'')+(ok?'':' off');
+    btn.onclick=()=>{S.seed=id;selT('seed');updSeedBar();};
+    btn.appendChild(mkSp(cd.sp,2));
+    const cnt=document.createElement('span');cnt.className='scnt';cnt.textContent=S.seeds[id]||0;btn.appendChild(cnt);
+    const lbl=document.createElement('span');lbl.style.fontSize='6px';lbl.textContent=cd.n;btn.appendChild(lbl);
+    sb.appendChild(btn);
+  });
+}
+
+// ════════════════════════════════════════════════
+//  MODALS
+// ════════════════════════════════════════════════
+function openM(which,tab){
+  closeM('shopmod');closeM('farmmod');aMod=which;
+  if(which==='shop'){aST=tab||'seeds';document.getElementById('shopmod').classList.add('on');mTab('shop',aST);}
+  else{aFT=tab||'animals';document.getElementById('farmmod').classList.add('on');mTab('farm',aFT);}
+}
+function closeM(id){document.getElementById(id).classList.remove('on');if(id!=='lvlmod')aMod=null;}
+window.closeM=closeM;
+
+function mTab(which,t){
+  if(which==='shop'){
+    aST=t;
+    const names=['seeds','inv','craft','expand','extras'];
+    document.querySelectorAll('#shopmod .mtab').forEach((b,i)=>b.classList.toggle('sel',names[i]===t));
+    document.querySelectorAll('#shopmod .mpane').forEach(p=>p.classList.remove('on'));
+    document.getElementById('sp-'+t).classList.add('on');buildST(t);
+  }else{
+    aFT=t;
+    const names=['animals','build','skills','wx','stats'];
+    document.querySelectorAll('#farmmod .mtab').forEach((b,i)=>b.classList.toggle('sel',names[i]===t));
+    document.querySelectorAll('#farmmod .mpane').forEach(p=>p.classList.remove('on'));
+    document.getElementById('fp-'+t).classList.add('on');buildFT(t);
+  }
+}
+
+// ── SHOP TABS ──
+function row(l,btn){const d=document.createElement('div');d.className='mrow';d.appendChild(l);d.appendChild(btn);return d;}
+function mrl(sp,n,s){const d=document.createElement('div');d.className='mrl';d.appendChild(mkSp(sp,3));const mi=document.createElement('div');mi.className='mi';mi.innerHTML=`<div class="mn">${n}</div><div class="ms">${s}</div>`;d.appendChild(mi);return d;}
+function gbtn(lbl,fn,cls=''){const b=document.createElement('button');b.className='gbtn '+(cls||'');b.textContent=lbl;b.onclick=fn;return b;}
+
+function buildST(t){
+  const szn=SEASONS[S.si];
+  if(t==='seeds'){
+    const el=document.getElementById('sp-seeds');el.innerHTML='<div class="mtit">🌱 شراء البذور (×5)</div>';
+    Object.entries(CROPS).filter(([,cd])=>!cd.ul||S.lv>=cd.ul).forEach(([id,cd])=>{
+      const ok=S.built.greenhouse||cd.sz.includes(szn.id);
+      const r2=row(mrl(cd.sp,cd.n+(ok?'':' ⛔'),`⏱${cd.gd}أيام | 💰${cd.sv} | لديك:${S.seeds[id]||0} | ${cd.sz.join('/')}`),gbtn(`💰${cd.sc*5}`,()=>buySeed(id,5)));
+      r2.style.opacity=ok?'1':'.5';el.appendChild(r2);
+    });
+  }else if(t==='inv'){
+    const el=document.getElementById('sp-inv');el.innerHTML='<div class="mtit">🧺 مخزوني</div>';
+    const ents=Object.entries(S.inv).filter(([,v])=>v>0);
+    if(!ents.length){el.innerHTML+='<div style="text-align:center;color:#6a4020;padding:12px;font-size:10px">فارغ — احصد محاصيلك!</div>';return;}
+    let totV=0;
+    ents.forEach(([id,cnt])=>{const val=Math.floor(iVal(id)*cnt*sellMult());totV+=val;el.appendChild(row(mrl(iSp(id),`${iName(id)} ×${cnt}`,`💰${val}${S.built.market?' (+30%)':''}`),gbtn('بيع',()=>sellItem(id),'g')));});
+    el.innerHTML+=`<div style="text-align:center;padding:5px;font-size:10px;color:#f2c040;border-top:1px solid #3a1800;">الإجمالي: 💰${totV}</div>`;
+    const d2=document.createElement('div');d2.style='text-align:center;margin:5px 0;';
+    const sb2=document.createElement('button');sb2.className='gbtn r';sb2.style.width='80%';sb2.textContent='💸 بيع كل شيء';sb2.onclick=()=>{sellAll();buildST('inv');};d2.appendChild(sb2);el.appendChild(d2);
+  }else if(t==='craft'){
+    const el=document.getElementById('sp-craft');el.innerHTML='<div class="mtit">🏭 تصنيع المنتجات</div>';
+    CRAFTS.forEach(c=>{
+      const canC=Object.entries(c.needs).every(([id,amt])=>(S.inv[id]||0)>=amt);
+      const bL=c.bld&&!S.built[c.bld];const sL=c.sk&&Object.entries(c.sk).some(([sk,lv])=>(S.skills[sk]||0)<lv);
+      const locked=bL||sL;
+      let sub=c.desc+` → 💰${c.val}`;
+      if(bL)sub+=` | يحتاج ${BUILDINGS[c.bld]?.n}`;if(sL)sub+=` | يحتاج مهارة`;
+      const b2=gbtn('صنع',()=>doCraft(c.id));b2.disabled=locked||!canC;
+      const r2=row(mrl(c.sp,c.n,sub),b2);r2.style.opacity=locked?'.4':'1';el.appendChild(r2);
+    });
+  }else if(t==='expand'){
+    const el=document.getElementById('sp-expand');el.innerHTML='<div class="mtit">🌍 توسعة المزرعة</div>';
+    const curr=`الآن: ${S.COLS}×${S.ROWS}`;
+    [[2,500,'أعمدة +2'],[4,1200,'أعمدة +4'],[6,2500,'أعمدة +6']].forEach(([n,cost,name])=>{
+      const l=document.createElement('div');l.className='mrl';l.innerHTML=`<span style="font-size:18px;flex-shrink:0">🌍</span>`;
+      const mi=document.createElement('div');mi.className='mi';mi.innerHTML=`<div class="mn">${name}</div><div class="ms">${curr}</div>`;l.appendChild(mi);
+      el.appendChild(row(l,gbtn(`💰${cost}`,()=>expandFarm(n,cost))));
+    });
+    const l2=document.createElement('div');l2.className='mrl';l2.innerHTML=`<span style="font-size:18px;flex-shrink:0">🌾</span>`;
+    const mi2=document.createElement('div');mi2.className='mi';mi2.innerHTML=`<div class="mn">صف +1</div><div class="ms">${curr}</div>`;l2.appendChild(mi2);
+    el.appendChild(row(l2,gbtn('💰800',()=>expandFarm(0,800,true))));
+  }else if(t==='extras'){
+    const el=document.getElementById('sp-extras');el.innerHTML='<div class="mtit">🧪 مستلزمات</div>';
+    [
+      {sp:'fertilize',n:'سماد ×5',  desc:'يسرّع النمو +2 يوم',price:150,fn:()=>buyItem('fertilizer',5,150)},
+      {sp:'watercan', n:'ري مجاني+3',desc:'+3 ريّات مجانية',price:60,fn:()=>{if(S.money<60){notify('💸');return;}S.money-=60;S.freeW+=3;notify('🪣 +3 ري');updHUD();}},
+      {sp:'coin',     n:'طاقة +30', desc:'استعادة فورية',    price:100,fn:()=>{if(S.money<100){notify('💸');return;}S.money-=100;S.energy=Math.min(S.maxE,S.energy+30);notify('⚡ +30 طاقة');updHUD();}},
+    ].forEach(it=>{el.appendChild(row(mrl(it.sp,it.n,it.desc),gbtn(`💰${it.price}`,it.fn)));});
+  }
+}
+
+// ── FARM TABS ──
+function buildFT(t){
+  if(t==='animals'){
+    const el=document.getElementById('fp-animals');el.innerHTML='';
+    if(S.animals.length){
+      el.innerHTML='<div class="mtit">🐄 حيواناتي</div>';
+      S.animals.forEach((a,i)=>{
+        const ad=ANIMALS[a.type];
+        const card=document.createElement('div');card.className='mcard';
+        const h=document.createElement('div');h.className='mcard-h';h.appendChild(mkSp(a.type,3));
+        h.innerHTML+=`<div><div class="mn2">${a.n}</div><div class="ms2">${a.fed?'✅ مُغذَّى':'❌ جائع'} | سعادة:${a.happy}%</div></div>`;card.appendChild(h);
+        const bar=document.createElement('div');bar.className='mbar';
+        const fill=document.createElement('div');fill.className='mbar-f';fill.style.width=a.happy+'%';fill.style.background=a.happy>60?'#40c040':a.happy>30?'#f2c040':'#e04040';
+        bar.appendChild(fill);card.appendChild(bar);
+        const sub=document.createElement('div');sub.style.cssText='font-size:8px;color:#6a4020;margin:2px 0;';sub.textContent=`${ad.pn} بعد ${Math.max(0,ad.pd-(a.dsp||0))} يوم | طعامه: ${iName(ad.feed)} (لديك:${S.inv[ad.feed]||0})`;card.appendChild(sub);
+        const fb=document.createElement('button');fb.className='gbtn';fb.style.cssText='width:100%;font-size:9px;';fb.textContent=`🌾 أطعم (${ad.fa}×${iName(ad.feed)})`;fb.onclick=()=>feedAnimal(i);card.appendChild(fb);
+        el.appendChild(card);
+      });
+    }else el.innerHTML='<div style="text-align:center;color:#6a4020;padding:10px;font-size:10px">ابنِ الحظيرة ثم اشترِ حيوانات من أدناه</div>';
+    el.innerHTML+=`<div class="mtit">🛒 شراء حيوانات</div>`;
+    Object.entries(ANIMALS).filter(([,a])=>!a.ul||S.lv>=a.ul).forEach(([id,ad])=>{
+      const r2=row(mrl(id,ad.n,`${ad.pn} كل ${ad.pd} يوم | طعام: ${iName(ad.feed)}`),gbtn(`💰${ad.cost}`,()=>addAnimal(id)));
+      r2.style.opacity=S.built.barn?'1':'.4';el.appendChild(r2);
+    });
+    if(!S.built.barn)el.innerHTML+=`<div style="text-align:center;font-size:8px;color:#e04040;padding:4px;">⚠️ ابنِ الحظيرة أولاً من تبويب "مبانٍ"</div>`;
+  }else if(t==='build'){
+    const el=document.getElementById('fp-build');el.innerHTML='<div class="mtit">🏗 المنشآت — تظهر على الخريطة!</div>';
+    Object.entries(BUILDINGS).forEach(([id,bd])=>{
+      const built=!!S.built[id];
+      const card=document.createElement('div');card.className='mcard';card.style.cssText='display:flex;align-items:center;gap:6px;';
+      card.appendChild(mkSp(bd.sp,3));
+      const info=document.createElement('div');info.style.flex='1';
+      info.innerHTML=`<div class="mn2">${bd.n}</div><div class="ms2">${bd.desc}</div><div style="font-size:8px;color:${built?'#38c840':'#f2c040'};margin-top:2px">${built?'✅ مبني':'💰 '+bd.cost}</div>`;
+      card.appendChild(info);
+      const btn=document.createElement('button');btn.className='gbtn';btn.disabled=built;btn.textContent=built?'✅':'بناء';btn.onclick=()=>buildStr(id);card.appendChild(btn);
+      el.appendChild(card);
+    });
+  }else if(t==='skills'){
+    const el=document.getElementById('fp-skills');
+    el.innerHTML=`<div class="mtit">⭐ المهارات</div><div style="text-align:center;padding:3px 0 7px;font-size:10px;color:#6a4020;">نقاط متاحة: <b style="color:#f2c040;font-size:16px;">${S.skPts}</b></div>`;
+    SKDEF.forEach(sk=>{
+      const lv=S.skills[sk.id]||0;
+      const card=document.createElement('div');card.className='mcard';
+      card.innerHTML=`<div style="display:flex;justify-content:space-between;margin-bottom:2px"><div style="font-size:10px;font-weight:800;color:#f0e8c0">${sk.n}</div><div style="font-size:9px;color:#f2c040;font-weight:900">${lv}/${sk.max}</div></div><div class="mbar"><div class="mbar-f" style="width:${lv/sk.max*100}%;background:${sk.col}"></div></div><div style="font-size:8px;color:#6a4020;margin-bottom:3px">${sk.desc}</div>`;
+      const b=document.createElement('button');b.className='gbtn';b.style.width='100%';b.disabled=lv>=sk.max||S.skPts<=0;b.textContent=lv>=sk.max?'✅ الحد الأقصى':(S.skPts>0?'⬆ ترقية':'لا نقاط');b.onclick=()=>upgSk(sk.id);card.appendChild(b);el.appendChild(card);
+    });
+  }else if(t==='wx'){
+    const el=document.getElementById('fp-wx');
+    const wxd=WX[S.wx],szn=SEASONS[S.si];
+    let html=`<div class="mcard" style="text-align:center">
+      <div style="font-size:36px;margin:3px 0">${wxd.ic}</div>
+      <div style="font-size:13px;font-weight:900;color:#f0e8c0">${wxd.n}</div>
+      <div style="font-size:8px;color:#6a4020;margin-top:3px">نمو: <span style="color:#f2c040">${Math.round((szn.gm+wxd.b)*100)}%</span> | ري تلقائي: ${wxd.aw?'✅':'❌'} | بئر: <span style="color:#4080e0">${S.freeW}</span></div>
+    </div>
+    <div class="mtit">الفصول — يوم ${S.dis}/${S.dps}</div>
+    <div style="display:flex;gap:2px;margin-bottom:5px">`;
+    SEASONS.forEach((_,i)=>html+=`<div style="flex:1;height:5px;background:${i===S.si?'#f2c040':'#3a1800'}"></div>`);
+    html+=`</div>`;
+    SEASONS.forEach((ss,i)=>html+=`<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:9px;color:${i===S.si?'#f2c040':'#6a4020'};${i===S.si?'font-weight:900':''}">${ss.ic} ${ss.n}${i===S.si?' ← الآن':''}</div>`);
+    html+=`<div class="mtit">محاصيل هذا الفصل</div><div style="display:flex;flex-wrap:wrap;gap:5px;padding:4px 0;">`;
+    Object.values(CROPS).filter(cd=>cd.sz.includes(szn.id)).forEach(cd=>{html+=`<div style="display:flex;flex-direction:column;align-items:center;gap:1px;">${mkSp(cd.sp,2).outerHTML}<span style="font-size:7px;color:#f2c040;">${cd.n}</span></div>`;});
+    html+=`</div>`;el.innerHTML=html;
+  }else if(t==='stats'){
+    const el=document.getElementById('fp-stats');
+    const inv=Object.entries(S.inv).filter(([,v])=>v>0);
+    const invV=inv.reduce((a,[id,cnt])=>a+Math.floor(iVal(id)*cnt*sellMult()),0);
+    el.innerHTML=`<div class="mtit">📊 إحصائياتك</div>
+    <div class="mcard">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
+        ${[['📅',S.stats.days,'أيام'],['🧺',S.stats.harvested,'حصاد'],['💰',S.stats.earned,'ذهب'],['🏭',S.stats.crafted,'تصنيع'],['🐄',S.animals.length,'حيوانات'],['🏗',Object.keys(S.built).length,'مبانٍ']].map(([ic,v,n])=>`<div style="text-align:center;"><div style="font-size:20px;">${ic}</div><div style="font-size:16px;font-weight:900;color:#f2c040;">${v}</div><div style="font-size:8px;color:#6a4020;">${n}</div></div>`).join('')}
+      </div>
+    </div>
+    <div class="mcard" style="margin-top:4px;">
+      <div style="font-size:9px;color:#6a4020;margin-bottom:4px;font-weight:800;">المخزون الحالي (💰${invV})</div>
+      ${inv.length?inv.map(([id,cnt])=>`<div style="display:flex;align-items:center;gap:4px;margin:2px 0;">${mkSp(iSp(id),2).outerHTML}<span style="font-size:9px;color:#f0e8c0;">${iName(id)} ×${cnt}</span></div>`).join(''):'<div style="font-size:9px;color:#6a4020;text-align:center;padding:4px;">فارغ</div>'}
+    </div>`;
+    buildSaveUI(el);
+  }
+}
+
+// ════════════════════════════════════════════════
+//  SAVE / LOAD SYSTEM
+// ════════════════════════════════════════════════
+const SAVE_KEY = 'mzraa_pixel_v1';
+let autoSaveTimer = null;
+
+function saveGame(manual=false){
+  try{
+    const data = {
+      S: JSON.parse(JSON.stringify(S)),
+      grid: JSON.parse(JSON.stringify(grid)),
+      ts: Date.now()
+    };
+    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+    if(manual) notify('💾 تم الحفظ بنجاح!');
+  }catch(e){
+    if(manual) notify('❌ فشل الحفظ!');
+  }
+}
+
+function loadGame(){
+  try{
+    const raw = localStorage.getItem(SAVE_KEY);
+    if(!raw) return false;
+    const data = JSON.parse(raw);
+    if(!data.S || !data.grid) return false;
+
+    // Restore state
+    Object.assign(S, data.S);
+    grid = data.grid;
+
+    // Make sure grid dimensions match
+    while(grid.length < S.ROWS){ grid.push([]); }
+    for(let r=0;r<S.ROWS;r++){
+      if(!grid[r]) grid[r]=[];
+      while(grid[r].length < S.COLS)
+        grid[r].push({t:'grass',wet:false,crop:null,days:0,fert:false});
+    }
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+
+function deleteSave(){
+  localStorage.removeItem(SAVE_KEY);
+  notify('🗑 تم حذف الحفظة!');
+}
+
+function hasSave(){
+  return !!localStorage.getItem(SAVE_KEY);
+}
+
+function getSaveInfo(){
+  try{
+    const raw = localStorage.getItem(SAVE_KEY);
+    if(!raw) return null;
+    const data = JSON.parse(raw);
+    const d = new Date(data.ts);
+    return { day: data.S.day, lv: data.S.lv, money: data.S.money,
+      time: d.toLocaleString('ar') };
+  }catch(e){ return null; }
+}
+
+// Auto-save every 60 seconds + on nextDay
+function startAutoSave(){
+  if(autoSaveTimer) clearInterval(autoSaveTimer);
+  autoSaveTimer = setInterval(()=>saveGame(false), 60000);
+}
+
+// Patch nextDay to save after each day
+const _origNextDay = nextDay;
+// We'll hook into it below
+
+// ════════════════════════════════════════════════
+//  SAVE UI (in stats tab)
+// ════════════════════════════════════════════════
+function buildSaveUI(container){
+  const info = getSaveInfo();
+  const wrap = document.createElement('div');
+  wrap.style.cssText='margin-top:8px;';
+
+  if(info){
+    const inf = document.createElement('div');
+    inf.style.cssText='background:#181000;border:1px solid #3a1800;padding:6px;margin-bottom:6px;font-size:9px;color:#6a4020;text-align:center;';
+    inf.innerHTML=`💾 آخر حفظة: يوم <b style="color:#f2c040">${info.day}</b> | مستوى <b style="color:#f2c040">${info.lv}</b> | 💰<b style="color:#f2c040">${info.money}</b><br><span style="font-size:8px;">${info.time}</span>`;
+    wrap.appendChild(inf);
+  }
+
+  const row1 = document.createElement('div');
+  row1.style.cssText='display:flex;gap:6px;margin-bottom:5px;';
+
+  const saveBtn = document.createElement('button');
+  saveBtn.className='gbtn';saveBtn.style.cssText='flex:1;font-size:10px;padding:5px;';
+  saveBtn.textContent='💾 حفظ اللعبة';
+  saveBtn.onclick=()=>{ saveGame(true); buildSaveUI(container); };
+
+  const delBtn = document.createElement('button');
+  delBtn.className='gbtn r';delBtn.style.cssText='flex:1;font-size:10px;padding:5px;';
+  delBtn.textContent='🗑 حذف الحفظة';
+  delBtn.onclick=()=>{
+    if(confirm('هل تريد حذف الحفظة والبدء من جديد؟')){
+      deleteSave();
+      location.reload();
+    }
+  };
+
+  row1.appendChild(saveBtn);
+  row1.appendChild(delBtn);
+  wrap.appendChild(row1);
+
+  const autoInfo = document.createElement('div');
+  autoInfo.style.cssText='font-size:8px;color:#3a2000;text-align:center;padding:3px;';
+  autoInfo.textContent='⚙ الحفظ التلقائي مُفعَّل (كل يوم + كل دقيقة)';
+  wrap.appendChild(autoInfo);
+
+  container.appendChild(wrap);
+}
+
+// ════════════════════════════════════════════════
+//  START SCREEN
+// ════════════════════════════════════════════════
+function showStartScreen(cb){
+  if(!hasSave()){ cb(false); return; }
+
+  const overlay = document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;background:#000000cc;z-index:9000;display:flex;align-items:center;justify-content:center;padding:12px;';
+
+  const info = getSaveInfo();
+  const box = document.createElement('div');
+  box.style.cssText='background:#0e0800;border:2px solid #f2c040;padding:18px;max-width:340px;width:100%;text-align:center;';
+  box.innerHTML=`
+    <div style="font-size:28px;margin-bottom:6px;">🌾</div>
+    <div style="font-size:16px;font-weight:900;color:#f2c040;margin-bottom:8px;">مزرعة البكسل</div>
+    <div style="background:#181000;border:1px solid #3a1800;padding:8px;margin-bottom:12px;font-size:10px;color:#6a4020;">
+      💾 حفظة موجودة<br>
+      📅 يوم <b style="color:#f2c040">${info.day}</b> &nbsp;|&nbsp;
+      ⭐ مستوى <b style="color:#f2c040">${info.lv}</b> &nbsp;|&nbsp;
+      💰 <b style="color:#f2c040">${info.money}</b>ذ<br>
+      <span style="font-size:8px;color:#3a2000;">${info.time}</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;">
+      <button id="ss-cont" style="background:transparent;border:2px solid #f2c040;color:#f2c040;font-family:Tajawal,sans-serif;font-size:13px;font-weight:900;padding:8px;cursor:pointer;">▶ متابعة اللعبة</button>
+      <button id="ss-new"  style="background:transparent;border:1px solid #4a2000;color:#6a4020;font-family:Tajawal,sans-serif;font-size:11px;font-weight:800;padding:6px;cursor:pointer;">🆕 بدء لعبة جديدة</button>
+    </div>
+  `;
+
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+
+  document.getElementById('ss-cont').onclick = ()=>{ overlay.remove(); cb(true); };
+  document.getElementById('ss-new').onclick = ()=>{
+    if(confirm('سيتم حذف حفظتك الحالية. متأكد؟')){
+      deleteSave();
+      overlay.remove();
+      cb(false);
+    }
+  };
+}
+
+// ════════════════════════════════════════════════
+//  BOOT
+// ════════════════════════════════════════════════
+window.addEventListener('resize',()=>resize());
+setupInput();
+
+// Fill toolbar icons
+fillC('ti-hoe','hoe',2);fillC('ti-seed','turnip',2);fillC('ti-wat','watercan',2);
+fillC('ti-har','basket',2);fillC('ti-fer','fertilize',2);fillC('ti-plo','remove',2);
+fillC('ai-wa','watercan',2);fillC('ai-ha','basket',2);fillC('ai-sa','coin',2);
+fillC('hcoin','coin',2);
+
+// Show start screen then boot
+showStartScreen((useSave)=>{
+  if(useSave){
+    loadGame();
+    resize();
+    updateWxFX();
+    notify('✅ تم استئناف اللعبة!');
+    setTimeout(()=>notify(`📅 أهلاً! أنت في اليوم ${S.day}`),800);
+  } else {
+    initGrid();
+    resize();
+    notify('🌸 مرحباً في مزرعة البكسل!');
+    setTimeout(()=>notify('📱 أدر الجهاز أفقياً للتجربة المثلى'),1000);
+  }
+  loop();updHUD();updSeedBar();
+  setSt('🌾 احرث التربة ← ازرع البذور ← اسقِ يومياً ← احصد عند النضج');
+
+  // Hook nextDay to auto-save
+  const _nd = nextDay;
+  window.nextDay = function(){
+    _nd();
+    saveGame(false);
+  };
+
+  // Save on page hide/close
+  document.addEventListener('visibilitychange',()=>{
+    if(document.hidden) saveGame(false);
+  });
+  window.addEventListener('pagehide',()=>saveGame(false));
+  window.addEventListener('beforeunload',()=>saveGame(false));
+
+  startAutoSave();
+  saveGame(false); // initial save
+});
+</script>
+</body>
+</html>
